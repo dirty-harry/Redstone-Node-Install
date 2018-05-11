@@ -125,25 +125,12 @@ installWallet() {
 configureWallet() {
     echo
     echo -e "[9/${MAX}] Configuring wallet. Please wait..."
-
-    sudo service $COINDAEMON@root start > /dev/null 2>&1
-    sleep 30
-    sudo service $COINDAEMON@root stop > /dev/null 2>&1
-    sleep 30
-
     mnip=$(curl --silent ipinfo.io/ip)
     rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     rpcpass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
-    sudo mkdir $coincore
-    echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nrpcallowedip=127.0.0.1" > $COINCORE/$COINCONFIG
-    sudo service $COINDAEMON@root start > /dev/null 2>&1
-    sleep 30
-    #mnkey=$($COINCLI masternode genkey)
-    sudo service $COINDAEMON@root stop > /dev/null 2>&1
-    sleep 30
-
-    echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nrpcallowedip=127.0.0.1\nmasternode=1\nbind=${mnip}:${COINPORT}n\listen=0\n\naddnode=35.176.127.127 \naddnode=18.130.33.99" >> ~COINCORE/$COINCONFIG
-
+    sudo mkdir -p $COINCORE
+    echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nrpcallowedip=127.0.0.1\nmasternode=1\nbind=${mnip}:${COINPORT}n\listen=0\n\naddnode=35.176.127.127 \naddnode=18.130.33.99" > $COINCONFIG
+    sudo mv $COINCONFIG $COINCORE
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
@@ -161,6 +148,7 @@ cd
 echo && echo
 
 echo -e ${YELLOW}
+echo -e "${YELLOW}**********************************************************************${NONE}"
 echo -e "${YELLOW}*                                                                    *${NONE}"
 echo -e "${YELLOW}*    ${NONE}${BOLD}This script will install and configure your Redstone node.   ${NONE}${YELLOW}   *${NONE}"
 echo -e "${YELLOW}*                                                                    *${NONE}"
