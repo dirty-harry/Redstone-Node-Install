@@ -18,7 +18,8 @@ COINTX=redstone-tx
 COINCORE=.stratisnode
 COINCONFIG=redstone.conf
 COINSTARTUP=/home/ubuntu/redstoned
-COINLOC=/home/ubuntu/Redstone/src/Redstone/Redstone.RedstoneD
+COINSRCLOC=/home/ubuntu/Redstone
+COINDLOC=/home/ubuntu/Redstone/src/Redstone/Redstone.RedstoneD
 COINSERVICELOC=/etc/systemd/system/redstoned@root.service
 
 checkForUbuntuVersion() {
@@ -110,19 +111,19 @@ compileWallet() {
 installWallet() {
     echo
     echo -e "[8/${MAX}] Installing wallet. Please wait..."
-
     cat << EOF > $COINSTARTUP
     #!/bin/bash
+    sudo apt update -y && sudo apt upgrade -y &&
+    cd $/COINSRCLOC &&
+    git pull &&
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
-    cd $COINLOC
+    cd $COINDLOC
     dotnet run -testnet -mine -mineaddress="TNd62DUQEHztwgScvkPvbE2uWdkvCYcsw7"
     EOF
     echo -e "[Unit]\nDescription=$COINDAEMON\nAfter=network.target\n\n[Service]\nType=simple\nUser=%i\nExecStart=$COINSTARTUP\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICELOC
-
     sudo chmod 777 ~/$COINDAEMON
     sudo systemctl --system daemon-reload > /dev/null 2>&1
     sudo systemctl enable $COINDAEMON@root > /dev/null 2>&1
-
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
