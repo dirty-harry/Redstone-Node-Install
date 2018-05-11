@@ -15,7 +15,7 @@ COINPORT=19157
 COINDAEMON=redstoned
 COINCLI=redstone-cli
 COINTX=redstone-tx
-COINCORE=.stratisnode
+COINCORE=/home/ubuntu/.stratisnode/redstone/RedstoneTest
 COINCONFIG=redstone.conf
 COINRUNCMD='dotnet run -testnet -mine -mineaddress="TNd62DUQEHztwgScvkPvbE2uWdkvCYcsw7"'
 COINSTARTUP=/home/ubuntu/redstoned
@@ -127,9 +127,9 @@ configureWallet() {
     echo -e "[9/${MAX}] Configuring wallet. Please wait..."
 
     sudo service $COINDAEMON@root start > /dev/null 2>&1
-    sleep 1
+    sleep 30
     sudo service $COINDAEMON@root stop > /dev/null 2>&1  
-    sleep 1
+    sleep 30
 
     mnip=$(curl --silent ipinfo.io/ip)
     rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
@@ -138,14 +138,14 @@ configureWallet() {
     echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nrpcallowedip=127.0.0.1" > ~/$COINCORE/$COINCONFIG
 
     sudo service $COINDAEMON@root start > /dev/null 2>&1
-    sleep 5
+    sleep 30
     
     #mnkey=$($COINCLI masternode genkey)
 
     sudo service $COINDAEMON@root stop > /dev/null 2>&1  
-    sleep 5
+    sleep 30
 
-    echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nrpcallowedip=127.0.0.1\nmasternode=1\nbind=${mnip}:${COINPORT}n\listen=0\n\naddnode=35.176.127.127 \naddnode=18.130.33.99" > ~/$COINCORE/$COINCONFIG
+    echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nrpcallowedip=127.0.0.1\nmasternode=1\nbind=${mnip}:${COINPORT}n\listen=0\n\naddnode=35.176.127.127 \naddnode=18.130.33.99" >> ~/$COINCORE/$COINCONFIG
 
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
