@@ -129,7 +129,7 @@ configureWallet() {
     rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     rpcpass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     sudo mkdir -p $COINCORE
-    echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nrpcallowedip=127.0.0.1\nmasternode=1\nbind=${mnip}:${COINPORT}n\listen=0\n\naddnode=35.176.127.127 \naddnode=18.130.33.99" > $COINCONFIG
+    echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nbind=${mnip}:${COINPORT}\nlisten=1\nserver=1\ndaemon=1\nmaxconnections=64\naddnode=35.176.127.127 \naddnode=18.130.33.99" > $COINCONFIG
     sudo mv $COINCONFIG $COINCORE
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
