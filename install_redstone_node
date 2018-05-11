@@ -11,7 +11,8 @@ UNDERLINE='\033[4m'
 MAX=10
 
 COINGITHUB=https://github.com/spartacrypt/Redstone
-COINPORT=19157
+COINPORT=19156
+COINRPCPORT=19157
 COINDAEMON=redstoned
 COINCLI=redstone-cli
 COINTX=redstone-tx
@@ -84,6 +85,7 @@ installFirewall() {
     sudo apt-get -y install ufw > /dev/null 2>&1
     sudo ufw allow OpenSSH > /dev/null 2>&1
     sudo ufw allow $COINPORT/tcp > /dev/null 2>&1
+    sudo ufw allow $COINRPCPORT/tcp > /dev/null 2>&1
     echo "y" | sudo ufw enable > /dev/null 2>&1
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
