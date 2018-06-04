@@ -21,7 +21,7 @@ COINCONFIG=redstone.conf
 COINRUNCMD='dotnet run -testnet -mine -mineaddress="TNd62DUQEHztwgScvkPvbE2uWdkvCYcsw7"'
 COINSTARTUP=/home/ubuntu/redstoned
 COINSRCLOC=/home/ubuntu/Redstone
-COINDLOC=/home/ubuntu/Redstone/src/Redstone/Redstone.RedstoneD
+COINDLOC=/home/ubuntu/Redstone/src/Redstone/Programs/Redstone.RedstoneFullNodeD
 COINSERVICELOC=/etc/systemd/system/
 COINSERVICENAME=redstoned@root.service
 
