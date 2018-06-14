@@ -28,6 +28,20 @@ declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}.service
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/redstone_${DATE_STAMP}_out.log"
 
+create_mn_user() {
+
+    # our new mnode unpriv user acc is added
+    if id "${MNODE_USER}" >/dev/null 2>&1; then
+        echo "user exists already, do nothing" &>> ${SCRIPT_LOGFILE}
+    else
+        echo -e "${NONE}${GREEN}* Adding new system user ${MNODE_USER}${NONE}"
+        adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+        echo -e "$MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
+
+    fi
+    su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+}
+
 checkForUbuntuVersion() {
    echo "[1/${MAX}] Checking Ubuntu version..."
     if [[ `cat /etc/issue.net`  == *16.04* ]]; then
@@ -55,11 +69,11 @@ setupSwap() {
 if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];then
     echo "* No proper swap, creating it"
     # needed because ant servers are ants
-    rm -f /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
-    dd if=/dev/zero of=/var/mnode_swap.img bs=1024k count=${MNODE_SWAPSIZE} &>> ${SCRIPT_LOGFILE}
-    chmod 0600 /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
-    mkswap /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
-    swapon /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
+    sudo rm -f /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
+    sudo dd if=/dev/zero of=/var/mnode_swap.img bs=1024k count=${MNODE_SWAPSIZE} &>> ${SCRIPT_LOGFILE}
+    sudo chmod 0600 /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
+    sudo mkswap /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
+    sudo swapon /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     echo '/var/mnode_swap.img none swap sw 0 0' | tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
     echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf               &>> ${SCRIPT_LOGFILE}
     echo 'vm.vfs_cache_pressure=50' | tee -a /etc/sysctl.conf		&>> ${SCRIPT_LOGFILE}
@@ -91,7 +105,7 @@ installFirewall() {
 installDependencies() {
     echo
     echo -e "[6/${MAX}] Installing dependecies. Please wait..."
-    sudo export DOTNET_CLI_TELEMETRY_OPTOUT=1 &>> ${SCRIPT_LOGFILE}
+    export DOTNET_CLI_TELEMETRY_OPTOUT=1 &>> ${SCRIPT_LOGFILE}
     sudo apt-get install git nano wget curl software-properties-common -qq -y &>> ${SCRIPT_LOGFILE}
     sudo curl -s https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &>> ${SCRIPT_LOGFILE}
     sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg &>> ${SCRIPT_LOGFILE}
@@ -102,26 +116,10 @@ installDependencies() {
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
-create_mn_user() {
-
-    # our new mnode unpriv user acc is added
-    if id "${MNODE_USER}" >/dev/null 2>&1; then
-        echo "user exists already, do nothing" &>> ${SCRIPT_LOGFILE}
-    else
-        echo "Adding new system user ${MNODE_USER}"
-        adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
-        echo -e "$MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
-
-    fi
-
-}
-
 compileWallet() {
     echo
     echo -e "[7/${MAX}] Compiling wallet. Please wait, this might take a while to complete..."
-    create_mn_user
-    su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
-    cd ~
+    cd ~  &>> ${SCRIPT_LOGFILE}
     git clone $COINGITHUB &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
@@ -176,6 +174,7 @@ read -p "This script will setup your Redstone node. Do you wish to continue? (y/
 echo -e "${NONE}"
 
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
+    create_mn_user
     checkForUbuntuVersion
     updateAndUpgrade
     setupSwap
