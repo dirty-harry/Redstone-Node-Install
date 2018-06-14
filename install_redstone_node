@@ -10,7 +10,6 @@ BOLD='\033[1m'
 UNDERLINE='\033[4m'
 MAX=10
 
-<<<<<<< HEAD
 declare -r MNODE_USER=redstone
 declare -r COINGITHUB=https://github.com/spartacrypt/Redstone
 declare -r COINPORT=19156
@@ -28,22 +27,6 @@ declare -r COINSERVICELOC=/etc/systemd/system/
 declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}.service
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
-=======
-COINGITHUB=https://github.com/spartacrypt/Redstone
-COINPORT=19156
-COINRPCPORT=19157
-COINDAEMON=redstoned
-COINCLI=redstone-cli
-COINTX=redstone-tx
-COINCORE=/home/ubuntu/.stratisnode/redstone/RedstoneTest
-COINCONFIG=redstone.conf
-COINRUNCMD='dotnet run -testnet -mine -mineaddress="TNd62DUQEHztwgScvkPvbE2uWdkvCYcsw7"'
-COINSTARTUP=/home/ubuntu/redstoned
-COINSRCLOC=/home/ubuntu/Redstone
-COINDLOC=/home/ubuntu/Redstone/src/Redstone/Programs/Redstone.RedstoneFullNodeD
-COINSERVICELOC=/etc/systemd/system/
-COINSERVICENAME=redstoned@root.service
->>>>>>> 53caa84d22faec7ed64ac1b059f2c60c441bf0eb
 
 checkForUbuntuVersion() {
    echo "[1/${MAX}] Checking Ubuntu version..."
