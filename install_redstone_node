@@ -74,20 +74,10 @@ create_mn_user() {
     else
         echo "Adding new system user ${MNODE_USER}"
         adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+        echo -e "$MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
+
     fi
 
-}
-
-#
-# /* set all permissions to the masternode user */
-#
-set_permissions() {
-
-	# maybe add a sudoers entry later
-	mkdir -p /var/log/sentinel &>> ${SCRIPT_LOGFILE}
-	chown -R ${MNODE_USER}:${MNODE_USER} ${MNODE_CONF_BASE} ${MNODE_DATA_BASE} /var/log/sentinel ${SENTINEL_BASE}/database &>> ${SCRIPT_LOGFILE}
-    # make group permissions same as user, so vps-user can be added to masternode group
-    chmod -R g=u ${MNODE_CONF_BASE} ${MNODE_DATA_BASE} /var/log/sentinel &>> ${SCRIPT_LOGFILE}
 }
 
 installFail2Ban() {
@@ -115,7 +105,7 @@ installDependencies() {
     echo -e "[6/${MAX}] Installing dependecies. Please wait..."
     sudo export DOTNET_CLI_TELEMETRY_OPTOUT=1 &>> ${SCRIPT_LOGFILE}
     sudo apt-get install git nano wget curl software-properties-common -qq -y &>> ${SCRIPT_LOGFILE}
-    sudo curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &>> ${SCRIPT_LOGFILE}
+    sudo curl -s https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &>> ${SCRIPT_LOGFILE}
     sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg &>> ${SCRIPT_LOGFILE}
     sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list' &>> ${SCRIPT_LOGFILE}
     sudo apt-get install apt-transport-https -qq -y &>> ${SCRIPT_LOGFILE}
@@ -128,16 +118,16 @@ compileWallet() {
     echo
     echo -e "[7/${MAX}] Compiling wallet. Please wait, this might take a while to complete..."
     cd
-    sudo git clone $COINGITHUB &>> ${SCRIPT_LOGFILE}
-
+    su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+    git clone $COINGITHUB &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
 installWallet() {
     echo
     echo -e "[8/${MAX}] Installing wallet. Please wait..."
-    echo -e "#!/bin/bash\nsudo apt update -y && \nsudo apt upgrade -y && \nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\ncd $COINDLOC\n$COINRUNCMD" > ${COINSTARTUP}
-    echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\n\n[Install]\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\nWantedBy=multi-user.target" >$COINSERVICENAME
+    echo -e "#!/bin/bash\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\ncd $COINDLOC\n$COINRUNCMD" > ${COINSTARTUP}
+    echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICENAME
     sudo mv $COINSERVICENAME $COINSERVICELOC
     sudo chmod 777 ${COINSTARTUP}
     sudo systemctl --system daemon-reload &>> ${SCRIPT_LOGFILE}
@@ -160,7 +150,7 @@ configureWallet() {
 startWallet() {
     echo
     echo -e "[10/${MAX}] Starting wallet daemon..."
-    sudo service $COINDAEMON@root start &>> ${SCRIPT_LOGFILE}
+    sudo service ${COINSERVICENAME} start &>> ${SCRIPT_LOGFILE}
     sleep 2
     echo -e "${GREEN}* Done${NONE}";
 }
@@ -190,7 +180,6 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     installFirewall
     installDependencies
     create_mn_user
-    set_permissions
     compileWallet
     installWallet
     configureWallet
