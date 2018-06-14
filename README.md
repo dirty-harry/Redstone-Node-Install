@@ -4,7 +4,7 @@ An automated script to install a Redstone Node:
 
 1. Download the install file:
 
-wget https://github.com/thecrypt0hunter/Redstone-Node-Install/blob/master/install_redstone_node
+git clone https://github.com/thecrypt0hunter/Redstone-Node-Install.git && cd Redstone-Node-Install
 
 2. Make the installation file executable:
 
