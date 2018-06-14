@@ -44,6 +44,7 @@ updateAndUpgrade() {
     echo "[2/${MAX}] Runing update and upgrade. Please wait..."
     sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq -y &>> ${SCRIPT_LOGFILE}
     sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq &>> ${SCRIPT_LOGFILE}
+    sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove -y -qq &>> ${SCRIPT_LOGFILE}
     echo -e "${GREEN}* Done${NONE}";
 }
 
@@ -52,9 +53,9 @@ setupSwap() {
 if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];then
     echo "* No proper swap, creating it"
     # needed because ant servers are ants
-    rm -f /var/mnode_swap.img
+    rm -f /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     dd if=/dev/zero of=/var/mnode_swap.img bs=1024k count=${MNODE_SWAPSIZE} &>> ${SCRIPT_LOGFILE}
-    chmod 0600 /var/mnode_swap.img
+    chmod 0600 /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     mkswap /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     swapon /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     echo '/var/mnode_swap.img none swap sw 0 0' | tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
@@ -112,13 +113,14 @@ installFirewall() {
 installDependencies() {
     echo
     echo -e "[6/${MAX}] Installing dependecies. Please wait..."
-    sudo apt-get install git nano wget curl software-properties-common -qq -y #&>> ${SCRIPT_LOGFILE}
-    sudo curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg #&>> ${SCRIPT_LOGFILE}
-    sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg #&>> ${SCRIPT_LOGFILE}
-    sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list' #&>> ${SCRIPT_LOGFILE}
-    sudo apt-get install apt-transport-https -qq -y #&>> ${SCRIPT_LOGFILE}
-    sudo apt-get update -qq -y #&>> ${SCRIPT_LOGFILE}
-    sudo apt-get install dotnet-sdk-2.1.103 -qq -y #&>> ${SCRIPT_LOGFILE}
+    sudo export DOTNET_CLI_TELEMETRY_OPTOUT=1 &>> ${SCRIPT_LOGFILE}
+    sudo apt-get install git nano wget curl software-properties-common -qq -y &>> ${SCRIPT_LOGFILE}
+    sudo curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &>> ${SCRIPT_LOGFILE}
+    sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg &>> ${SCRIPT_LOGFILE}
+    sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list' &>> ${SCRIPT_LOGFILE}
+    sudo apt-get install apt-transport-https -qq -y &>> ${SCRIPT_LOGFILE}
+    sudo apt-get update -qq -y &>> ${SCRIPT_LOGFILE}
+    sudo apt-get install dotnet-sdk-2.1.103 -qq -y &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
@@ -137,7 +139,7 @@ installWallet() {
     echo -e "#!/bin/bash\nsudo apt update -y && \nsudo apt upgrade -y && \nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\ncd $COINDLOC\n$COINRUNCMD" > ${COINSTARTUP}
     echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\n\n[Install]\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\nWantedBy=multi-user.target" >$COINSERVICENAME
     sudo mv $COINSERVICENAME $COINSERVICELOC
-    sudo chmod 777 ~/$COINDAEMON
+    sudo chmod 777 ${COINSTARTUP}
     sudo systemctl --system daemon-reload &>> ${SCRIPT_LOGFILE}
     sudo systemctl enable $COINDAEMON@root &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
