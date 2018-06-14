@@ -39,7 +39,6 @@ create_mn_user() {
         echo -e "$MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
 
     fi
-    su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
 }
 
 checkForUbuntuVersion() {
@@ -119,7 +118,7 @@ installDependencies() {
 compileWallet() {
     echo
     echo -e "[7/${MAX}] Compiling wallet. Please wait, this might take a while to complete..."
-    cd ~  &>> ${SCRIPT_LOGFILE}
+    cd /home/${MNODE_USER}/  &>> ${SCRIPT_LOGFILE}
     git clone $COINGITHUB &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
@@ -132,7 +131,7 @@ installWallet() {
     sudo mv $COINSERVICENAME $COINSERVICELOC
     sudo chmod 777 ${COINSTARTUP}
     sudo systemctl --system daemon-reload &>> ${SCRIPT_LOGFILE}
-    sudo systemctl enable $COINDAEMON@root &>> ${SCRIPT_LOGFILE}
+    sudo systemctl enable ${COINSERVICENAME} &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
@@ -190,3 +189,5 @@ echo -e "${YELLOW}* Installation complete *${NONE}"
 else
     echo && echo "Installation cancelled" && echo
 fi
+    su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+    cd ~
