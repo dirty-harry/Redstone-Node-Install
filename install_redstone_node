@@ -26,7 +26,7 @@ declare -r COINDLOC=/home/${MNODE_USER}/Redstone/src/Redstone/Redstone.RedstoneD
 declare -r COINSERVICELOC=/etc/systemd/system/
 declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}.service
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
-declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
+declare -r SCRIPT_LOGFILE="/tmp/redstone_${DATE_STAMP}_out.log"
 
 checkForUbuntuVersion() {
    echo "[1/${MAX}] Checking Ubuntu version..."
@@ -50,6 +50,8 @@ updateAndUpgrade() {
 
 setupSwap() {
 #check if swap is available
+    echo
+    echo "[3/${MAX}] Creating Swap File. Please wait..."
 if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];then
     echo "* No proper swap, creating it"
     # needed because ant servers are ants
@@ -64,20 +66,6 @@ if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];the
 else
     echo "* All good, we have a swap"
 fi
-}
-
-create_mn_user() {
-
-    # our new mnode unpriv user acc is added
-    if id "${MNODE_USER}" >/dev/null 2>&1; then
-        echo "user exists already, do nothing" &>> ${SCRIPT_LOGFILE}
-    else
-        echo "Adding new system user ${MNODE_USER}"
-        adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
-        echo -e "$MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
-
-    fi
-
 }
 
 installFail2Ban() {
@@ -114,11 +102,26 @@ installDependencies() {
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
+create_mn_user() {
+
+    # our new mnode unpriv user acc is added
+    if id "${MNODE_USER}" >/dev/null 2>&1; then
+        echo "user exists already, do nothing" &>> ${SCRIPT_LOGFILE}
+    else
+        echo "Adding new system user ${MNODE_USER}"
+        adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+        echo -e "$MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
+
+    fi
+
+}
+
 compileWallet() {
     echo
     echo -e "[7/${MAX}] Compiling wallet. Please wait, this might take a while to complete..."
-    cd
+    create_mn_user
     su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+    cd ~
     git clone $COINGITHUB &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
@@ -179,7 +182,6 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     installFail2Ban
     installFirewall
     installDependencies
-    create_mn_user
     compileWallet
     installWallet
     configureWallet
