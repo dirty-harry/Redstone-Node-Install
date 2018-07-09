@@ -19,10 +19,10 @@ declare -r COINCLI=redstone-cli
 declare -r COINTX=redstone-tx
 declare -r COINCORE=/home/${MNODE_USER}/.stratisnode/redstone/RedstoneTest
 declare -r COINCONFIG=redstone.conf
-declare -r COINRUNCMD='dotnet run -testnet -mine -mineaddress="TNd62DUQEHztwgScvkPvbE2uWdkvCYcsw7"'
+declare -r COINRUNCMD='dotnet run -testnet'
 declare -r COINSTARTUP=/home/${MNODE_USER}/redstoned
 declare -r COINSRCLOC=/home/${MNODE_USER}/Redstone
-declare -r COINDLOC=/home/${MNODE_USER}/Redstone/src/Redstone/Redstone.RedstoneD
+declare -r COINDLOC=/home/${MNODE_USER}/Redstone/src/Redstone/Programs/Redstone.RedstoneFullNodeD
 declare -r COINSERVICELOC=/etc/systemd/system/
 declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}.service
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
@@ -111,7 +111,7 @@ installDependencies() {
     sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list' &>> ${SCRIPT_LOGFILE}
     sudo apt-get install apt-transport-https -qq -y &>> ${SCRIPT_LOGFILE}
     sudo apt-get update -qq -y &>> ${SCRIPT_LOGFILE}
-    sudo apt-get install dotnet-sdk-2.1.103 -qq -y &>> ${SCRIPT_LOGFILE}
+    sudo apt-get install dotnet-sdk-2.1 -qq -y &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
@@ -142,7 +142,7 @@ configureWallet() {
     rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     rpcpass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     sudo mkdir -p $COINCORE
-    echo -e "rpcuser=${rpcuser}\nrpcpassword=${rpcpass}\nbind=${mnip}:${COINPORT}\nlisten=1\nserver=1\ndaemon=1\nmaxconnections=64\naddnode=35.176.127.127 \naddnode=18.130.33.99" > $COINCONFIG
+    echo -e "externalip=${mnip}:${COINPORT}\nlisten=1\ndaemon=1\nmaxconnections=64\n#addnode= \n#addnode=" > $COINCONFIG
     sudo mv $COINCONFIG $COINCORE
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
