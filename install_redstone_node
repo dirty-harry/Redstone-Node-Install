@@ -24,7 +24,7 @@ declare -r COINSTARTUP=/home/${MNODE_USER}/redstoned
 declare -r COINSRCLOC=/home/${MNODE_USER}/Redstone
 declare -r COINDLOC=/home/${MNODE_USER}/Redstone/src/Redstone/Programs/Redstone.RedstoneFullNodeD
 declare -r COINSERVICELOC=/etc/systemd/system/
-declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}.service
+declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/redstone_${DATE_STAMP}_out.log"
 
@@ -36,7 +36,7 @@ create_mn_user() {
     else
         echo -e "${NONE}${GREEN}* Adding new system user ${MNODE_USER}${NONE}"
         adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
-        echo -e "$MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
+        echo -e "${MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
 
     fi
 }
@@ -103,15 +103,14 @@ installFirewall() {
 
 installDependencies() {
     echo
-    echo -e "[6/${MAX}] Installing dependecies. Please wait..."
-    export DOTNET_CLI_TELEMETRY_OPTOUT=1 &>> ${SCRIPT_LOGFILE}
-    sudo apt-get install git nano wget curl software-properties-common -qq -y &>> ${SCRIPT_LOGFILE}
+    echo -e "[6/${MAX}] Installing dependencies. Please wait..."
+    sudo apt-get install git nano wget curl software-properties-common -y &>> ${SCRIPT_LOGFILE}
     sudo curl -s https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &>> ${SCRIPT_LOGFILE}
     sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg &>> ${SCRIPT_LOGFILE}
     sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list' &>> ${SCRIPT_LOGFILE}
-    sudo apt-get install apt-transport-https -qq -y &>> ${SCRIPT_LOGFILE}
-    sudo apt-get update -qq -y &>> ${SCRIPT_LOGFILE}
-    sudo apt-get install dotnet-sdk-2.1 -qq -y &>> ${SCRIPT_LOGFILE}
+    sudo apt-get install apt-transport-https -y &>> ${SCRIPT_LOGFILE}
+    sudo apt-get update -y &>> ${SCRIPT_LOGFILE}
+    sudo apt-get install dotnet-sdk-2.1 -y &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
@@ -127,8 +126,8 @@ installWallet() {
     echo
     echo -e "[8/${MAX}] Installing wallet. Please wait..."
     echo -e "#!/bin/bash\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\ncd $COINDLOC\n$COINRUNCMD" > ${COINSTARTUP}
-    echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICENAME
-    sudo mv $COINSERVICENAME $COINSERVICELOC
+    echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICENAME.service
+    sudo mv $COINSERVICENAME.service $COINSERVICELOC
     sudo chmod 777 ${COINSTARTUP}
     sudo systemctl --system daemon-reload &>> ${SCRIPT_LOGFILE}
     sudo systemctl enable ${COINSERVICENAME} &>> ${SCRIPT_LOGFILE}
@@ -189,5 +188,5 @@ echo -e "${YELLOW}* Installation complete *${NONE}"
 else
     echo && echo "Installation cancelled" && echo
 fi
-    su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+    #sudo su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
     cd ~
