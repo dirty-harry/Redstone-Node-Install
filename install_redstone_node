@@ -8,7 +8,7 @@ CYAN='\033[01;36m'
 WHITE='\033[01;37m'
 BOLD='\033[1m'
 UNDERLINE='\033[4m'
-MAX=10
+MAX=11
 
 declare -r MNODE_USER=redstone
 declare -r COINGITHUB=https://github.com/spartacrypt/Redstone
@@ -36,7 +36,7 @@ create_mn_user() {
     else
         echo -e "${NONE}${GREEN}* Adding new system user ${MNODE_USER}${NONE}"
         sudo adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
-        sudo echo -e "${MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
+        s]udo echo -e "${MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
 
     fi
 }
@@ -103,12 +103,6 @@ installFirewall() {
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
-installCockpit() {
-    echo
-    echo "* Installing Cockpit. Please wait..."
-    sudo apt-get install cockpit &>> ${SCRIPT_LOGFILE}
-}
-
 installDependencies() {
     echo
     echo -e "[6/${MAX}] Installing dependencies. Please wait..."
@@ -162,6 +156,13 @@ startWallet() {
     echo -e "${GREEN}* Done${NONE}";
 }
 
+installCockpit() {
+    echo
+    echo "[11/${MAX}] Installing Cockpit. Please wait..."
+    sudo apt-get install cockpit &>> ${SCRIPT_LOGFILE}
+    echo -e "${NONE}${GREEN}* Done${NONE}";
+}
+
 clear
 cd
 
@@ -185,13 +186,13 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     updateAndUpgrade
     setupSwap
     installFail2Ban
-    installCockpit
     installFirewall
     installDependencies
     compileWallet
     installWallet
     configureWallet
     startWallet
+    installCockpit
 
 echo -e "${YELLOW}* Installation complete *${NONE}"
 else
