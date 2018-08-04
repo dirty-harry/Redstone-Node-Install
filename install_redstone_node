@@ -159,7 +159,7 @@ startWallet() {
 installCockpit() {
     echo
     echo "[11/${MAX}] Installing Cockpit. Please wait..."
-    sudo apt-get install cockpit &>> ${SCRIPT_LOGFILE}
+    sudo apt-get install cockpit -y &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
