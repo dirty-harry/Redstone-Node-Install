@@ -35,8 +35,8 @@ create_mn_user() {
         echo "user exists already, do nothing" &>> ${SCRIPT_LOGFILE}
     else
         echo -e "${NONE}${GREEN}* Adding new system user ${MNODE_USER}${NONE}"
-        adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
-        echo -e "${MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
+        sudo adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+        sudo echo -e "${MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
 
     fi
 }
@@ -95,10 +95,18 @@ installFirewall() {
     echo -e "[5/${MAX}] Installing UFW. Please wait..."
     sudo apt-get -y install ufw &>> ${SCRIPT_LOGFILE}
     sudo ufw allow OpenSSH &>> ${SCRIPT_LOGFILE}
+    # required for cockpit
+    sudo ufw allow 9090/tcp     &>> ${SCRIPT_LOGFILE}
     sudo ufw allow $COINPORT/tcp &>> ${SCRIPT_LOGFILE}
     sudo ufw allow $COINRPCPORT/tcp &>> ${SCRIPT_LOGFILE}
     echo "y" | sudo ufw enable &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
+}
+
+installCockpit() {
+    echo
+    echo "* Installing Cockpit. Please wait..."
+    sudo apt-get install cockpit &>> ${SCRIPT_LOGFILE}
 }
 
 installDependencies() {
@@ -177,6 +185,7 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     updateAndUpgrade
     setupSwap
     installFail2Ban
+    installCockpit
     installFirewall
     installDependencies
     compileWallet
