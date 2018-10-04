@@ -8,7 +8,7 @@ CYAN='\033[01;36m'
 WHITE='\033[01;37m'
 BOLD='\033[1m'
 UNDERLINE='\033[4m'
-MAX=11
+MAX=12
 
 declare -r MNODE_USER=redstone
 declare -r COINGITHUB=https://github.com/spartacrypt/Redstone
@@ -28,6 +28,13 @@ declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/redstone_${DATE_STAMP}_out.log"
 
+function check_root() {
+if [ "$(id -u)" != "0" ]; then
+    echo "Sorry, this script needs to be run as root. Do \"sudo install.sh\""
+    exit 1
+fi
+}
+
 create_mn_user() {
 
     # our new mnode unpriv user acc is added
@@ -39,6 +46,13 @@ create_mn_user() {
         sudo echo -e "${MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
 
     fi
+}
+
+function set_permissions() {
+	# maybe add a sudoers entry later
+	chown -R ${MNODE_USER}:${MNODE_USER} ${COINCORE} ${COINSTARTUP} ${COINSRCLOC} ${COINSTARTUP} ${COINDLOC} ${COINSERVICELOC} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
+    # make group permissions same as user, so vps-user can be added to masternode group
+    chmod -R g=u ${COINCORE} ${COINSTARTUP} ${COINSRCLOC} ${COINSTARTUP} ${COINDLOC} ${COINSERVICELOC} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
 }
 
 checkForUbuntuVersion() {
@@ -153,6 +167,7 @@ startWallet() {
     echo -e "[10/${MAX}] Starting wallet daemon..."
     sudo service ${COINSERVICENAME} start &>> ${SCRIPT_LOGFILE}
     sleep 2
+    sudo journalctl -f -u ${COINSERVICENAME}
     echo -e "${GREEN}* Done${NONE}";
 }
 
@@ -161,6 +176,22 @@ installCockpit() {
     echo "[11/${MAX}] Installing Cockpit. Please wait..."
     sudo apt-get install cockpit -y &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
+}
+
+function installUnattendedUpgrades() {
+
+    echo
+    echo "[12/${MAX}] Installing Unattended Upgrades. Can take a while ... Please wait..."
+    sudo apt install unattended-upgrades -y &>> ${SCRIPT_LOGFILE}
+    sleep 3
+    sudo sh -c 'echo "Unattended-Upgrade::Allowed-Origins {" >> /etc/apt/apt.conf.d/50unattended-upgrades'
+    sudo sh -c 'echo "        "${distro_id}:${distro_codename}";" >> /etc/apt/apt.conf.d/50unattended-upgrades'
+    sudo sh -c 'echo "        "${distro_id}:${distro_codename}-security";" >> /etc/apt/apt.conf.d/50unattended-upgrades'
+    sudo sh -c 'echo "APT::Periodic::AutocleanInterval "7";" >> /etc/apt/apt.conf.d/20auto-upgrades'
+    sudo sh -c 'echo "APT::Periodic::Unattended-Upgrade "1";" >> /etc/apt/apt.conf.d/20auto-upgrades'
+    cat /etc/apt/apt.conf.d/20auto-upgrades &>> ${SCRIPT_LOGFILE}
+}
+
 }
 
 clear
@@ -177,11 +208,14 @@ echo -e "${YELLOW}**************************************************************
 echo && echo
 
 echo -e "${BOLD}"
-read -p "This script will setup your Redstone node. Do you wish to continue? (y/n)?" response
+read -p "This script will setup your Redstone node. This script should be ran as root. The log file will be here: ${SCRIPT_LOGFILE}. Do you wish to continue? (y/n)?" response
 echo -e "${NONE}"
 
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
+
+    check_root
     create_mn_user
+    set_permissions
     checkForUbuntuVersion
     updateAndUpgrade
     setupSwap
@@ -191,8 +225,9 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     compileWallet
     installWallet
     configureWallet
-    startWallet
     installCockpit
+    installUnattendedUpgrades
+    startWallet
 
 echo -e "${YELLOW}* Installation complete *${NONE}"
 else
