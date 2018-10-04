@@ -223,7 +223,6 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     compileWallet
     installWallet
     configureWallet
-    installCockpit
     installUnattendedUpgrades
     startWallet
     set_permissions
