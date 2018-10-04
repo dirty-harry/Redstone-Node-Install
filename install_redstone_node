@@ -27,10 +27,11 @@ declare -r COINSERVICELOC=/etc/systemd/system/
 declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/redstone_${DATE_STAMP}_out.log"
+declare -r SWAPSIZE="4G"
 
 function check_root() {
 if [ "$(id -u)" != "0" ]; then
-    echo "Sorry, this script needs to be run as root. Do \"sudo install.sh\""
+    echo "Sorry, this script needs to be run as root. Do \"sudo su root\" and then re-run this script"
     exit 1
 fi
 }
@@ -50,9 +51,9 @@ create_mn_user() {
 
 function set_permissions() {
 	# maybe add a sudoers entry later
-	chown -R ${MNODE_USER}:${MNODE_USER} ${COINCORE} ${COINSTARTUP} ${COINSRCLOC} ${COINSTARTUP} ${COINDLOC} ${COINSERVICELOC} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
+	chown -R ${MNODE_USER}:${MNODE_USER} ${COINCORE} ${COINSTARTUP} ${COINSRCLOC} ${COINSTARTUP} ${COINDLOC} &>> ${SCRIPT_LOGFILE}
     # make group permissions same as user, so vps-user can be added to masternode group
-    chmod -R g=u ${COINCORE} ${COINSTARTUP} ${COINSRCLOC} ${COINSTARTUP} ${COINDLOC} ${COINSERVICELOC} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
+    chmod -R g=u ${COINCORE} ${COINSTARTUP} ${COINSRCLOC} ${COINSTARTUP} ${COINDLOC} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
 }
 
 checkForUbuntuVersion() {
@@ -83,13 +84,13 @@ if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];the
     echo "* No proper swap, creating it"
     # needed because ant servers are ants
     sudo rm -f /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
-    sudo dd if=/dev/zero of=/var/mnode_swap.img bs=1024k count=${MNODE_SWAPSIZE} &>> ${SCRIPT_LOGFILE}
+    sudo dd if=/dev/zero of=/var/mnode_swap.img bs=1024k count=${SWAPSIZE} &>> ${SCRIPT_LOGFILE}
     sudo chmod 0600 /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     sudo mkswap /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     sudo swapon /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
-    echo '/var/mnode_swap.img none swap sw 0 0' | tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
-    echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf               &>> ${SCRIPT_LOGFILE}
-    echo 'vm.vfs_cache_pressure=50' | tee -a /etc/sysctl.conf		&>> ${SCRIPT_LOGFILE}
+    echo '/var/mnode_swap.img none swap sw 0 0' | sudo tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
+    echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf               &>> ${SCRIPT_LOGFILE}
+    echo 'vm.vfs_cache_pressure=50' | sudo tee -a /etc/sysctl.conf		&>> ${SCRIPT_LOGFILE}
 else
     echo "* All good, we have a swap"
 fi
@@ -143,6 +144,7 @@ installWallet() {
     echo -e "[8/${MAX}] Installing wallet. Please wait..."
     echo -e "#!/bin/bash\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\ncd $COINDLOC\n$COINRUNCMD" > ${COINSTARTUP}
     echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICENAME.service
+  	chown -R ${MNODE_USER}:${MNODE_USER} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
     sudo mv $COINSERVICENAME.service $COINSERVICELOC
     sudo chmod 777 ${COINSTARTUP}
     sudo systemctl --system daemon-reload &>> ${SCRIPT_LOGFILE}
@@ -157,7 +159,7 @@ configureWallet() {
     rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     rpcpass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     sudo mkdir -p $COINCORE
-    echo -e "externalip=${mnip}\ntxindex=1\nlisten=1\ndaemon=1\nmaxconnections=64\n#addnode= \n#addnode=" > $COINCONFIG
+    echo -e "externalip=${mnip}\ntxindex=1\nlisten=1\ndaemon=1\nmaxconnections=64\naddnode=80.211.88.201 \n#addnode=" > $COINCONFIG
     sudo mv $COINCONFIG $COINCORE
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
@@ -167,7 +169,6 @@ startWallet() {
     echo -e "[10/${MAX}] Starting wallet daemon..."
     sudo service ${COINSERVICENAME} start &>> ${SCRIPT_LOGFILE}
     sleep 2
-    sudo journalctl -f -u ${COINSERVICENAME}
     echo -e "${GREEN}* Done${NONE}";
 }
 
@@ -213,7 +214,6 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
 
     check_root
     create_mn_user
-    set_permissions
     checkForUbuntuVersion
     updateAndUpgrade
     setupSwap
@@ -226,8 +226,9 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     installCockpit
     installUnattendedUpgrades
     startWallet
+    set_permissions
 
-echo -e "${YELLOW}* Installation complete *${NONE}"
+echo -e "${YELLOW}* Installation complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} *${NONE}"
 else
     echo && echo "Installation cancelled" && echo
 fi
