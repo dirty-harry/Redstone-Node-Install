@@ -192,8 +192,6 @@ function installUnattendedUpgrades() {
     cat /etc/apt/apt.conf.d/20auto-upgrades &>> ${SCRIPT_LOGFILE}
 }
 
-}
-
 clear
 cd
 
