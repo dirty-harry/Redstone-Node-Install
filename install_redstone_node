@@ -216,7 +216,7 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     create_mn_user
     checkForUbuntuVersion
     updateAndUpgrade
-    setupSwap
+    #setupSwap
     installFail2Ban
     installFirewall
     installDependencies
