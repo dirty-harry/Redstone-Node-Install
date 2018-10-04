@@ -27,7 +27,7 @@ declare -r COINSERVICELOC=/etc/systemd/system/
 declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/redstone_${DATE_STAMP}_out.log"
-declare -r SWAPSIZE="4G"
+declare -r SWAPSIZE="1G"
 
 function check_root() {
 if [ "$(id -u)" != "0" ]; then
@@ -223,6 +223,7 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     compileWallet
     installWallet
     configureWallet
+    installCockpit
     installUnattendedUpgrades
     startWallet
     set_permissions
