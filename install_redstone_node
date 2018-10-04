@@ -88,9 +88,9 @@ if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];the
     sudo chmod 0600 /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     sudo mkswap /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
     sudo swapon /var/mnode_swap.img &>> ${SCRIPT_LOGFILE}
-    echo '/var/mnode_swap.img none swap sw 0 0' | sudo tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
-    echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf               &>> ${SCRIPT_LOGFILE}
-    echo 'vm.vfs_cache_pressure=50' | sudo tee -a /etc/sysctl.conf		&>> ${SCRIPT_LOGFILE}
+    echo '/var/mnode_swap.img none swap sw 0 0' | tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
+    echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf               &>> ${SCRIPT_LOGFILE}
+    echo 'vm.vfs_cache_pressure=50' | tee -a /etc/sysctl.conf		&>> ${SCRIPT_LOGFILE}
 else
     echo "* All good, we have a swap"
 fi
@@ -166,7 +166,7 @@ configureWallet() {
 
 startWallet() {
     echo
-    echo -e "[10/${MAX}] Starting wallet daemon..."
+    echo -e "[11/${MAX}] Starting wallet daemon..."
     sudo service ${COINSERVICENAME} start &>> ${SCRIPT_LOGFILE}
     sleep 2
     echo -e "${GREEN}* Done${NONE}";
@@ -174,7 +174,7 @@ startWallet() {
 
 installCockpit() {
     echo
-    echo "[11/${MAX}] Installing Cockpit. Please wait..."
+    echo "[x/${MAX}] Installing Cockpit. Please wait..."
     sudo apt-get install cockpit -y &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
@@ -182,7 +182,7 @@ installCockpit() {
 function installUnattendedUpgrades() {
 
     echo
-    echo "[12/${MAX}] Installing Unattended Upgrades. Can take a while ... Please wait..."
+    echo "[10/${MAX}] Installing Unattended Upgrades. Can take a while ... Please wait..."
     sudo apt install unattended-upgrades -y &>> ${SCRIPT_LOGFILE}
     sleep 3
     sudo sh -c 'echo "Unattended-Upgrade::Allowed-Origins {" >> /etc/apt/apt.conf.d/50unattended-upgrades'
