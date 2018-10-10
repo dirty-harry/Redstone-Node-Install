@@ -11,7 +11,7 @@ UNDERLINE='\033[4m'
 MAX=12
 
 
-declare -r $Configuration =release ### or debug
+declare -r Configuration =release ### or debug
 declare -r MNODE_USER=redstone
 declare -r COINGITHUB=https://github.com/spartacrypt/Redstone
 declare -r COINPORT=19156
