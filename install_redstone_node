@@ -226,7 +226,10 @@ echo -e "${YELLOW}**************************************************************
 echo && echo
 
 echo -e "${BOLD}"
-read -p "This script will setup (y) or upgrade (u) your Redstone node. This script should be ran as root. The log file will be here: ${SCRIPT_LOGFILE}. Do you wish to continue? (y/n/u)?" response
+read -p "This script will setup (y) or upgrade (u) your Redstone node. This script should be ran as root. Do you wish to continue? (y/n/u)?" response
+echo
+echo -e "${YELLOW} The log file will be here: ${SCRIPT_LOGFILE}.${NONE}"
+
 echo -e "${NONE}"
 
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
@@ -257,7 +260,7 @@ else
         echo -e "${YELLOW} Upgrade complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} ${NONE}"
 
     else
-      echo && echo "${YELLOW} Installation cancelled! ${NONE}" && echo
+      echo && echo -e "${YELLOW} Installation cancelled! ${NONE}" && echo
     fi
     
 fi
