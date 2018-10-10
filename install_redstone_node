@@ -155,10 +155,10 @@ installWallet() {
     echo
     echo -e "[8/${MAX}] Installing wallet. Please wait..."
     echo -e "#!/bin/bash\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\ncd $COINDLOC\n$COINRUNCMD" > ${COINSTARTUP}
-    echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICENAME.service
-  	chown -R ${MNODE_USER}:${MNODE_USER} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
-    sudo mv $COINSERVICENAME.service $COINSERVICELOC
-    sudo chmod 777 ${COINSTARTUP}
+    echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP \nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICENAME.service
+    sudo chown -R ${MNODE_USER}:${MNODE_USER} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
+    sudo mv $COINSERVICENAME.service $COINSERVICELOC &>> ${SCRIPT_LOGFILE}
+    sudo chmod 777 ${COINSTARTUP} &>> ${SCRIPT_LOGFILE}
     sudo systemctl --system daemon-reload &>> ${SCRIPT_LOGFILE}
     sudo systemctl enable ${COINSERVICENAME} &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
@@ -183,6 +183,15 @@ startWallet() {
     sleep 2
     echo -e "${GREEN}* Done${NONE}";
 }
+
+stopWallet() {
+    echo
+    echo -e "Stopping wallet daemon..."
+    sudo service ${COINSERVICENAME} stop &>> ${SCRIPT_LOGFILE}
+    sleep 2
+    echo -e "${GREEN}* Done${NONE}";
+}
+
 
 installCockpit() {
     echo
@@ -219,7 +228,7 @@ echo -e "${YELLOW}**************************************************************
 echo && echo
 
 echo -e "${BOLD}"
-read -p "This script will setup your Redstone node. This script should be ran as root. The log file will be here: ${SCRIPT_LOGFILE}. Do you wish to continue? (y/n)?" response
+read -p "This script will setup (y) or upgrade (u) your Redstone node. This script should be ran as root. The log file will be here: ${SCRIPT_LOGFILE}. Do you wish to continue? (y/n/u)?" response
 echo -e "${NONE}"
 
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
@@ -240,9 +249,16 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     startWallet
     set_permissions
 
-echo -e "${YELLOW}* Installation complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} *${NONE}"
-else
-    echo && echo "Installation cancelled" && echo
-fi
+    echo -e "${YELLOW}Installation complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME}${NONE}"
+  else
+    if [[ "$response" =~ ^([uU]+$ ]]; then
+    	check_root
+    	stopWallet
+    	compileWallet
+    	startWallet
+    else
+       echo && echo "Installation cancelled" && echo
+  fi
+fi  
     #sudo su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
     cd ~
