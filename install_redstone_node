@@ -11,6 +11,7 @@ UNDERLINE='\033[4m'
 MAX=12
 
 declare -r MNODE_USER=redstone
+declare -r CONF=release
 declare -r COINGITHUB=https://github.com/spartacrypt/Redstone
 declare -r COINPORT=19156
 declare -r COINRPCPORT=19157
@@ -24,12 +25,11 @@ declare -r COINSTARTUP=/home/${MNODE_USER}/redstoned
 declare -r COINSRCLOC=/home/${MNODE_USER}/Redstone
 declare -r COINDLOC=/home/${MNODE_USER}/RedstoneNode   
 declare -r COINDSRC=/home/${MNODE_USER}/Redstone/src/Redstone/Programs/Redstone.RedstoneFullNodeD
-declare -r COINDEXE=${COINDSRC}/bin/$Configuration/netcoreapp2.1
+declare -r COINDEXE=${COINDSRC}/bin/${CONF}/netcoreapp2.1
 declare -r COINSERVICELOC=/etc/systemd/system/
 declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/redstone_${DATE_STAMP}_out.log"
-declare -r $Configuration = "release" # or "debug"
 declare -r SWAPSIZE="1G"
 
 function check_root() {
@@ -142,8 +142,9 @@ compileWallet() {
     cd ${COINSRCLOC}
     git submodule update --init --recursive
     cd ${COINDSRC}
-    dotnet build -c $Configuration -v m	   ### compile code
+    dotnet build -c ${CONF} -v m	   ### compile code
     cd ${COINDEXE}
+    sudo rm -rf COINDLOC
     mkdir $COINDLOC
     cp * $COINDLOC      	### copy executables
     sudo rm -rf COINSRCLOC   	### Remove source
@@ -179,6 +180,13 @@ startWallet() {
     echo
     echo -e "[11/${MAX}] Starting wallet daemon..."
     sudo service ${COINSERVICENAME} start &>> ${SCRIPT_LOGFILE}
+    sleep 2
+    echo -e "${GREEN}* Done${NONE}";
+}
+stopWallet() {
+    echo
+    echo -e "Stopping wallet daemon..."
+    sudo service ${COINSERVICENAME} stop &>> ${SCRIPT_LOGFILE}
     sleep 2
     echo -e "${GREEN}* Done${NONE}";
 }
@@ -241,15 +249,14 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
 
 echo -e "${YELLOW}* Installation complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} *${NONE}"
 else
-    if [[ "$response" =~ ^([uU]+$ ]]; then
+    if [[ "$response" =~ ^([uU])+$ ]]; then
         check_root
         stopWallet
         compileWallet
         startWallet
     else
-        echo
+      echo && echo "Installation cancelled" && echo
     fi
-    echo && echo "Installation cancelled" && echo
+    
 fi
-    sudo su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
     cd ~
