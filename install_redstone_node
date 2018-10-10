@@ -60,7 +60,7 @@ function set_permissions() {
 }
 
 checkForUbuntuVersion() {
-   echo "[1/${MAX}] Checking Ubuntu version..."
+   echo "* Checking Ubuntu version..."
     if [[ `cat /etc/issue.net`  == *16.04* ]]; then
         echo -e "${GREEN}* You are running `cat /etc/issue.net` . Setup will continue.${NONE}";
     else
@@ -72,7 +72,7 @@ checkForUbuntuVersion() {
 
 updateAndUpgrade() {
     echo
-    echo "[2/${MAX}] Running update and upgrade. Please wait..."
+    echo "* Running update and upgrade. Please wait..."
     sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq -y &>> ${SCRIPT_LOGFILE}
     sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq &>> ${SCRIPT_LOGFILE}
     sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove -y -qq &>> ${SCRIPT_LOGFILE}
@@ -82,7 +82,7 @@ updateAndUpgrade() {
 setupSwap() {
 #check if swap is available
     echo
-    echo "[3/${MAX}] Creating Swap File. Please wait..."
+    echo "* Creating Swap File. Please wait..."
 if [ $(free | awk '/^Swap:/ {exit !$2}') ] || [ ! -f "/var/mnode_swap.img" ];then
     echo "* No proper swap, creating it"
     # needed because ant servers are ants
@@ -101,7 +101,7 @@ fi
 
 installFail2Ban() {
     echo
-    echo -e "[4/${MAX}] Installing fail2ban. Please wait..."
+    echo -e "* Installing fail2ban. Please wait..."
     sudo apt-get -y install fail2ban &>> ${SCRIPT_LOGFILE}
     sudo systemctl enable fail2ban &>> ${SCRIPT_LOGFILE}
     sudo systemctl start fail2ban &>> ${SCRIPT_LOGFILE}
@@ -110,7 +110,7 @@ installFail2Ban() {
 
 installFirewall() {
     echo
-    echo -e "[5/${MAX}] Installing UFW. Please wait..."
+    echo -e "* Installing UFW. Please wait..."
     sudo apt-get -y install ufw &>> ${SCRIPT_LOGFILE}
     sudo ufw allow OpenSSH &>> ${SCRIPT_LOGFILE}
     # required for cockpit
@@ -123,7 +123,7 @@ installFirewall() {
 
 installDependencies() {
     echo
-    echo -e "[6/${MAX}] Installing dependencies. Please wait..."
+    echo -e "* Installing dependencies. Please wait..."
     sudo apt-get install git nano wget curl software-properties-common -y &>> ${SCRIPT_LOGFILE}
     sudo curl -s https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &>> ${SCRIPT_LOGFILE}
     sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg &>> ${SCRIPT_LOGFILE}
@@ -136,7 +136,7 @@ installDependencies() {
 
 compileWallet() {
     echo
-    echo -e "[7/${MAX}] Compiling wallet. Please wait, this might take a while to complete..."
+    echo -e "* Compiling wallet. Please wait, this might take a while to complete..."
     cd /home/${MNODE_USER}/  &>> ${SCRIPT_LOGFILE}
     git clone ${COINGITHUB} &>> ${SCRIPT_LOGFILE}
     cd ${COINSRCLOC} 
@@ -153,7 +153,7 @@ compileWallet() {
 
 installWallet() {
     echo
-    echo -e "[8/${MAX}] Installing wallet. Please wait..."
+    echo -e "* Installing wallet. Please wait..."
     echo -e "#!/bin/bash\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\ncd $COINDLOC\n$COINRUNCMD" > ${COINSTARTUP}
     echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICENAME.service
   	chown -R ${MNODE_USER}:${MNODE_USER} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
@@ -166,7 +166,7 @@ installWallet() {
 
 configureWallet() {
     echo
-    echo -e "[9/${MAX}] Configuring wallet. Please wait..."
+    echo -e "* Configuring wallet. Please wait..."
     mnip=$(curl --silent ipinfo.io/ip)
     rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     rpcpass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
@@ -178,14 +178,14 @@ configureWallet() {
 
 startWallet() {
     echo
-    echo -e "[11/${MAX}] Starting wallet daemon..."
+    echo -e "* Starting wallet daemon..."
     sudo service ${COINSERVICENAME} start &>> ${SCRIPT_LOGFILE}
     sleep 2
     echo -e "${GREEN}* Done${NONE}";
 }
 stopWallet() {
     echo
-    echo -e "Stopping wallet daemon..."
+    echo -e "* Stopping wallet daemon..."
     sudo service ${COINSERVICENAME} stop &>> ${SCRIPT_LOGFILE}
     sleep 2
     echo -e "${GREEN}* Done${NONE}";
@@ -193,7 +193,7 @@ stopWallet() {
 
 installCockpit() {
     echo
-    echo "[x/${MAX}] Installing Cockpit. Please wait..."
+    echo "* Installing Cockpit. Please wait..."
     sudo apt-get install cockpit -y &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
@@ -201,7 +201,7 @@ installCockpit() {
 function installUnattendedUpgrades() {
 
     echo
-    echo "[10/${MAX}] Installing Unattended Upgrades. Can take a while ... Please wait..."
+    echo "* Installing Unattended Upgrades. Can take a while ... Please wait..."
     sudo apt install unattended-upgrades -y &>> ${SCRIPT_LOGFILE}
     sleep 3
     sudo sh -c 'echo "Unattended-Upgrade::Allowed-Origins {" >> /etc/apt/apt.conf.d/50unattended-upgrades'
@@ -226,7 +226,7 @@ echo -e "${YELLOW}**************************************************************
 echo && echo
 
 echo -e "${BOLD}"
-read -p "This script will setup your Redstone node. This script should be ran as root. The log file will be here: ${SCRIPT_LOGFILE}. Do you wish to continue? (y/n)?" response
+read -p "This script will setup (y) or upgrade (u) your Redstone node. This script should be ran as root. The log file will be here: ${SCRIPT_LOGFILE}. Do you wish to continue? (y/n/u)?" response
 echo -e "${NONE}"
 
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
@@ -247,15 +247,17 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     startWallet
     set_permissions
 
-echo -e "${YELLOW}* Installation complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} *${NONE}"
+echo -e "${YELLOW} Installation complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} ${NONE}"
 else
     if [[ "$response" =~ ^([uU])+$ ]]; then
         check_root
         stopWallet
         compileWallet
         startWallet
+        echo -e "${YELLOW} Upgrade complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} ${NONE}"
+
     else
-      echo && echo "Installation cancelled" && echo
+      echo && echo "${YELLOW} Installation cancelled! ${NONE}" && echo
     fi
     
 fi
