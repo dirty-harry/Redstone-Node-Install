@@ -19,14 +19,17 @@ declare -r COINCLI=redstone-cli
 declare -r COINTX=redstone-tx
 declare -r COINCORE=/home/${MNODE_USER}/.stratisnode/redstone/RedstoneTest
 declare -r COINCONFIG=redstone.conf
-declare -r COINRUNCMD='sudo dotnet run -testnet'
+declare -r COINRUNCMD='sudo dotnet ./Redstone.RedstoneFullNodeD.dll -testnet' #'sudo dotnet run -testnet'
 declare -r COINSTARTUP=/home/${MNODE_USER}/redstoned
 declare -r COINSRCLOC=/home/${MNODE_USER}/Redstone
-declare -r COINDLOC=/home/${MNODE_USER}/Redstone/src/Redstone/Programs/Redstone.RedstoneFullNodeD
+declare -r COINDLOC=/home/${MNODE_USER}/RedstoneNode   
+declare -r COINDSRC=/home/${MNODE_USER}/Redstone/src/Redstone/Programs/Redstone.RedstoneFullNodeD
+declare -r COINDEXE=${COINDSRC}/bin/$Configuration/netcoreapp2.1
 declare -r COINSERVICELOC=/etc/systemd/system/
 declare -r COINSERVICENAME=${COINDAEMON}@${MNODE_USER}
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/redstone_${DATE_STAMP}_out.log"
+declare -r $Configuration = "release" # or "debug"
 declare -r SWAPSIZE="1G"
 
 function check_root() {
@@ -111,7 +114,7 @@ installFirewall() {
     sudo apt-get -y install ufw &>> ${SCRIPT_LOGFILE}
     sudo ufw allow OpenSSH &>> ${SCRIPT_LOGFILE}
     # required for cockpit
-    sudo ufw allow 9090/tcp     &>> ${SCRIPT_LOGFILE}
+    #sudo ufw allow 9090/tcp     &>> ${SCRIPT_LOGFILE}
     sudo ufw allow $COINPORT/tcp &>> ${SCRIPT_LOGFILE}
     sudo ufw allow $COINRPCPORT/tcp &>> ${SCRIPT_LOGFILE}
     echo "y" | sudo ufw enable &>> ${SCRIPT_LOGFILE}
@@ -136,6 +139,14 @@ compileWallet() {
     echo -e "[7/${MAX}] Compiling wallet. Please wait, this might take a while to complete..."
     cd /home/${MNODE_USER}/  &>> ${SCRIPT_LOGFILE}
     git clone $COINGITHUB &>> ${SCRIPT_LOGFILE}
+    cd ${COINSRCLOC}
+    git submodule update --init --recursive
+    cd ${COINDSRC}
+    dotnet build -c $Configuration -v m	   ### compile code
+    cd ${COINDEXE}
+    mkdir $COINDLOC
+    cp * $COINDLOC      	### copy executables
+    sudo rm -rf COINSRCLOC   	### Remove source
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
@@ -159,7 +170,7 @@ configureWallet() {
     rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     rpcpass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     sudo mkdir -p $COINCORE
-    echo -e "externalip=${mnip}\ntxindex=1\nlisten=1\ndaemon=1\nmaxconnections=64\naddnode=80.211.88.201 \n#addnode=" > $COINCONFIG
+    echo -e "externalip=${mnip}\ntxindex=1\nlisten=1\ndaemon=1\nmaxconnections=64\n#addnode=\n#addnode=" > $COINCONFIG
     sudo mv $COINCONFIG $COINCORE
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
