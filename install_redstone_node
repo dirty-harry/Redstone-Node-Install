@@ -21,7 +21,7 @@ declare -r COINCLI=redstone-cli
 declare -r COINTX=redstone-tx
 declare -r COINCORE=/home/${MNODE_USER}/.stratisnode/redstone/RedstoneTest
 declare -r COINCONFIG=redstone.conf
-declare -r COINRUNCMD=sudo dotnet ./Redstone.RedstoneFullNodeD.dll -testnet
+declare -r COINRUNCMD="sudo dotnet ./Redstone.RedstoneFullNodeD.dll -testnet"
 declare -r COINSTARTUP=/home/${MNODE_USER}/redstoned
 declare -r COINSRCLOC=/home/${MNODE_USER}/Redstone
 declare -r COINDLOC=/home/${MNODE_USER}/RedstoneNode   
@@ -147,7 +147,7 @@ compileWallet() {
     cd ${COINDEXE}
     mkdir $COINDLOC
     cp * $COINDLOC &>> ${SCRIPT_LOGFILE} ### copy executables
-    sudo rm -rf COINSRCLOC &>> ${SCRIPT_LOGFILE} ### Remove source
+    sudo rm -rf ${COINSRCLOC} &>> ${SCRIPT_LOGFILE} ### Remove source
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
