@@ -250,7 +250,7 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     set_permissions
 
     echo -e "${YELLOW}Installation complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME}${NONE}"
-  else
+else
     if [[ "$response" =~ ^([uU]+$ ]]; then
     	check_root
     	stopWallet
@@ -258,7 +258,7 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     	startWallet
     else
        echo && echo "Installation cancelled" && echo
-  fi
+    fi
 fi  
-    #sudo su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
+    sudo su ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
     cd ~
