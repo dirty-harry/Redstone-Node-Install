@@ -137,7 +137,7 @@ installDependencies() {
 compileWallet() {
     echo
     echo -e "* Compiling wallet. Please wait, this might take a while to complete..."
-    cd /home/${MNODE_USER}/  &>> ${SCRIPT_LOGFILE}
+    cd /home/${MNODE_USER}/
     git clone ${COINGITHUB} &>> ${SCRIPT_LOGFILE}
     cd ${COINSRCLOC} 
     git submodule update --init --recursive &>> ${SCRIPT_LOGFILE}
@@ -154,6 +154,7 @@ compileWallet() {
 installWallet() {
     echo
     echo -e "* Installing wallet. Please wait..."
+    cd /home/${MNODE_USER}/
     echo -e "#!/bin/bash\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\ncd $COINDLOC\n$COINRUNCMD" > ${COINSTARTUP}
     echo -e "[Unit]\nDescription=${COINDAEMON}\nAfter=network.target\n\n[Service]\nType=simple\nUser=${MNODE_USER}\nGroup=${MNODE_USER}\nExecStart=${COINSTARTUP}\nRestart=always\nRestartSec=5\nPrivateTmp=true\nTimeoutStopSec=60s\nTimeoutStartSec=5s\nStartLimitInterval=120s\nStartLimitBurst=15\n\n[Install]\nWantedBy=multi-user.target" >$COINSERVICENAME.service
   	chown -R ${MNODE_USER}:${MNODE_USER} ${COINSERVICELOC} &>> ${SCRIPT_LOGFILE}
@@ -167,6 +168,7 @@ installWallet() {
 configureWallet() {
     echo
     echo -e "* Configuring wallet. Please wait..."
+    cd /home/${MNODE_USER}/
     mnip=$(curl --silent ipinfo.io/ip)
     rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     rpcpass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
