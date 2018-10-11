@@ -40,16 +40,18 @@ fi
 }
 
 create_mn_user() {
-
+    echo
+    echo "* Checking for user & add if required. Please wait..."
     # our new mnode unpriv user acc is added
     if id "${MNODE_USER}" >/dev/null 2>&1; then
-        echo "user exists already, do nothing" &>> ${SCRIPT_LOGFILE}
+        echo "user exists already, do nothing"
     else
         echo -e "${NONE}${GREEN}* Adding new system user ${MNODE_USER}${NONE}"
         sudo adduser --disabled-password --gecos "" ${MNODE_USER} &>> ${SCRIPT_LOGFILE}
         sudo echo -e "${MNODE_USER} ALL=(ALL) NOPASSWD:ALL" &>> /etc/sudoers.d/90-cloud-init-users
 
     fi
+    echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
 function set_permissions() {
@@ -107,6 +109,15 @@ installFail2Ban() {
     sudo systemctl start fail2ban &>> ${SCRIPT_LOGFILE}
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
+
+setupTmpRAM() {
+    echo
+    echo -e "* Pushing tmp files to RAM for performance. Please wait..."
+    echo 'tmpfs   /tmp            tmpfs   defaults,noatime,nosuid,nodev,noexec,mode=1777,size=512M          0       0' | tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
+    echo 'tmpfs   /var/tmp        tmpfs   defaults,noatime,mode=1777,size=2M                      0       0' | tee -a /etc/fstab &>> ${SCRIPT_LOGFILE}
+    echo -e "${NONE}${GREEN}* Done${NONE}";
+}
+
 
 installFirewall() {
     echo
