@@ -252,6 +252,7 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     checkForUbuntuVersion
     updateAndUpgrade
     #setupSwap
+    setupTmpRAM
     installFail2Ban
     installFirewall
     installDependencies
