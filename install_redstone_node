@@ -62,6 +62,7 @@ function set_permissions() {
 }
 
 checkForUbuntuVersion() {
+   echo
    echo "* Checking Ubuntu version..."
     if [[ `cat /etc/issue.net`  == *16.04* ]]; then
         echo -e "${GREEN}* You are running `cat /etc/issue.net` . Setup will continue.${NONE}";
@@ -227,21 +228,23 @@ function installUnattendedUpgrades() {
 
 clear
 cd
-
 echo && echo
-
-echo -e ${YELLOW}
-echo -e "${YELLOW}**********************************************************************${NONE}"
-echo -e "${YELLOW}*                                                                    *${NONE}"
-echo -e "${YELLOW}*    ${NONE}${BOLD}This script will install and configure your Redstone node.   ${NONE}${YELLOW}   *${NONE}"
-echo -e "${YELLOW}*                                                                    *${NONE}"
-echo -e "${YELLOW}**********************************************************************${NONE}"
-echo && echo
-
+echo -e ${RED}
+echo -e "${RED}██████╗ ███████╗██████╗ ███████╗████████╗ ██████╗ ███╗   ██╗███████╗${NONE}"  
+echo -e "${RED}██╔══██╗██╔════╝██╔══██╗██╔════╝╚══██╔══╝██╔═══██╗████╗  ██║██╔════╝${NONE}"    
+echo -e "${RED}██████╔╝█████╗  ██║  ██║███████╗   ██║   ██║   ██║██╔██╗ ██║█████╗  ${NONE}"    
+echo -e "${RED}██╔══██╗██╔══╝  ██║  ██║╚════██║   ██║   ██║   ██║██║╚██╗██║██╔══╝  ${NONE}"    
+echo -e "${RED}██║  ██║███████╗██████╔╝███████║   ██║   ╚██████╔╝██║ ╚████║███████╗${NONE}"    
+echo -e "${RED}╚═╝  ╚═╝╚══════╝╚═════╝ ╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═══╝╚══════╝${NONE}"  
+echo -e ${RED}
+echo -e "${PURPLE}**********************************************************************${NONE}"
+#echo -e "${PURPLE}*                                                                    *${NONE}"
+echo -e "${PURPLE}*    ${NONE}This script will install and configure your Redstone node.      *${NONE}"
+#echo -e "${PURPLE}*                                                                    *${NONE}"
+echo -e "${PURPLE}**********************************************************************${NONE}"
 echo -e "${BOLD}"
-read -p "This script will setup (y) or upgrade (u) your Redstone node. This script should be ran as root. Do you wish to continue? (y/n/u)?" response
+read -p "Please run this script as the root user. Do you want to setup (y) or upgrade (u) your Redstone node. (y/n/u)?" response
 echo
-echo -e "${YELLOW} The log file will be here: ${SCRIPT_LOGFILE}.${NONE}"
 
 echo -e "${NONE}"
 
@@ -264,17 +267,21 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     startWallet
     set_permissions
 
-echo -e "${YELLOW} Installation complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} ${NONE}"
+echo
+echo -e "${BLUE} Installation complete. ${NONE}"
+echo -e "${BLUE} The log file will be here: ${SCRIPT_LOGFILE}.${NONE}"
+echo -e "${BLUE} Check service with: sudo journalctl -f -u ${COINSERVICENAME} ${NONE}"
 else
     if [[ "$response" =~ ^([uU])+$ ]]; then
         check_root
         stopWallet
+	updateAndUpgrade
         compileWallet
         startWallet
-        echo -e "${YELLOW} Upgrade complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} ${NONE}"
+        echo -e "${BLUE} Upgrade complete. Check service with: sudo journalctl -f -u ${COINSERVICENAME} ${NONE}"
 
     else
-      echo && echo -e "${YELLOW} Installation cancelled! ${NONE}" && echo
+      echo && echo -e "${RED} Installation cancelled! ${NONE}" && echo
     fi
     
 fi
