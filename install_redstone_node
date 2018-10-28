@@ -12,7 +12,7 @@ MAX=12
 
 declare -r MNODE_USER=redstone
 declare -r CONF=release
-declare -r COINGITHUB=https://github.com/spartacrypt/Redstone
+declare -r COINGITHUB=https://github.com/RedstonePlatform/Redstone.git
 declare -r COINPORT=19156
 declare -r COINRPCPORT=19157
 declare -r COINDAEMON=redstoned
