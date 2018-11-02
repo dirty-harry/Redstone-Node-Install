@@ -64,10 +64,10 @@ function set_permissions() {
 checkForUbuntuVersion() {
    echo
    echo "* Checking Ubuntu version..."
-    if [[ `cat /etc/issue.net`  == *16.04* ]]; then
-        echo -e "${GREEN}* You are running `cat /etc/issue.net` . Setup will continue.${NONE}";
+    if [[ 'cat /etc/issue.net'  == *16.04* ]]; then
+        echo -e "${GREEN}* You are running 'cat /etc/issue.net' . Setup will continue.${NONE}";
     else
-        echo -e "${RED}* You are not running Ubuntu 16.04.X. You are running `cat /etc/issue.net` ${NONE}";
+        echo -e "${RED}* You are not running Ubuntu 16.04.X. You are running 'cat /etc/issue.net' ${NONE}";
         echo && echo "Installation cancelled" && echo;
         exit;
     fi
@@ -182,8 +182,8 @@ configureWallet() {
     echo -e "* Configuring wallet. Please wait..."
     cd /home/${MNODE_USER}/
     mnip=$(curl --silent ipinfo.io/ip)
-    rpcuser=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
-    rpcpass=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+    rpcuser='cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1'
+    rpcpass='cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1'
     sudo mkdir -p $COINCORE
     echo -e "externalip=${mnip}\ntxindex=1\nlisten=1\ndaemon=1\nmaxconnections=64\n#addnode=\n#addnode=" > $COINCONFIG
     ### Update .conf with TOR config
