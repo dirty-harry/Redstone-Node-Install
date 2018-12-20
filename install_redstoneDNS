@@ -153,10 +153,10 @@ compileWallet() {
     mkdir ${COINDLOC} &>> ${SCRIPT_LOGFILE}
     cd /home/${MNODE_USER}/
     git clone ${COINGITHUB} &>> ${SCRIPT_LOGFILE}
-    cd ${COINSRCLOC} 
+    cd ${COINSRCLOC}
     git submodule update --init --recursive &>> ${SCRIPT_LOGFILE}
     cd ${COINDSRC} 
-    dotnet restore
+    dotnet restore &>> ${SCRIPT_LOGFILE}
     dotnet publish -c ${CONF} -r linux-x64 -v m -o ${COINDLOC} &>> ${SCRIPT_LOGFILE}	   ### compile code 
     #dotnet build -c ${CONF} -v m &>> ${SCRIPT_LOGFILE}	   ### compile code
     rm -rf ${COINSRCLOC}  &>> ${SCRIPT_LOGFILE} 	### Remove source
