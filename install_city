@@ -154,11 +154,9 @@ compileWallet() {
     cd ${COINSRCLOC} 
     git submodule update --init --recursive &>> ${SCRIPT_LOGFILE}
     cd ${COINDSRC} 
-    dotnet build -c ${CONF} -v m &>> ${SCRIPT_LOGFILE}	   ### compile code
-    cd ${COINDEXE}
-    rm -rf ${COINDLOC} &>> ${SCRIPT_LOGFILE}
-    mkdir ${COINDLOC} &>> ${SCRIPT_LOGFILE}
-    cp * ${COINDLOC}  &>> ${SCRIPT_LOGFILE}    	### copy executables
+    dotnet restore &>> ${SCRIPT_LOGFILE}
+    dotnet publish -c ${CONF} -r linux-x64 -v m -o ${COINDLOC} &>> ${SCRIPT_LOGFILE}	   ### compile code 
+    #dotnet build -c ${CONF} -v m &>> ${SCRIPT_LOGFILE}	   ### compile code
     rm -rf ${COINSRCLOC}  &>> ${SCRIPT_LOGFILE} 	### Remove source
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
