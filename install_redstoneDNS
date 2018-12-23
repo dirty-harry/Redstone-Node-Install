@@ -127,6 +127,8 @@ installFirewall() {
     sudo ufw allow OpenSSH &>> ${SCRIPT_LOGFILE}
     # required for cockpit
     #sudo ufw allow 9090/tcp     &>> ${SCRIPT_LOGFILE}
+    sudo ufw allow 53/tcp     &>> ${SCRIPT_LOGFILE}
+    sudo ufw allow 53/udp     &>> ${SCRIPT_LOGFILE}
     sudo ufw allow $COINPORT/tcp &>> ${SCRIPT_LOGFILE}
     sudo ufw allow $COINRPCPORT/tcp &>> ${SCRIPT_LOGFILE}
     echo "y" | sudo ufw enable &>> ${SCRIPT_LOGFILE}
