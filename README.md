@@ -2,14 +2,9 @@
 
 An automated script to install a Redstone Node:
 
-1. Download the install file:
+To install Redstone Node on Ubuntu 16.04 - as <code>sudo su root</code> run the following command:
 
-git clone https://github.com/RedstonePlatform/Redstone-Node-Install.git && cd Redstone-Node-Install
+<code>bash <( curl https://raw.githubusercontent.com/RedstonePlatform/Redstone-Node-Install/master/install_redstone_node.sh )</code>
 
-2. Make the installation file executable:
+If you get the error "bash: curl: command not found", run this first: <code>apt-get -y install curl</code>
 
-sudo chmod +x install_redstone_node
-
-3. Run it and follow the prompts:
-
-./install_redstone_node
