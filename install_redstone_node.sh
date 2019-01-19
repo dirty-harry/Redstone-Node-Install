@@ -150,7 +150,6 @@ compileWallet() {
     cd ${COINSRCLOC} 
     git submodule update --init --recursive &>> ${SCRIPT_LOGFILE}
     cd ${COINDSRC} 
-    dotnet restore &>> ${SCRIPT_LOGFILE}
     dotnet publish -c ${CONF} -r linux-x64 -v m -o ${COINDLOC} &>> ${SCRIPT_LOGFILE}	   ### compile & publish code 
     rm -rf ${COINSRCLOC} &>> ${SCRIPT_LOGFILE} 	   ### Remove source
     echo -e "${NONE}${GREEN}* Done${NONE}";
