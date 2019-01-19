@@ -7,7 +7,7 @@ An automated script to install a Redstone Node. To install a Redstone Node on Ub
 If you get the error "bash: curl: command not found", run this first: <code>apt-get -y install curl</code>
 
 **Redstone Full Node with Explorer**
-Runs the same installation for the Redstone Full Node above.  In addition installs MongoDB, Nako Block Chain Indexer, nginx and Stratis.Guru Block Explorer.
+In addition to the Redstone Full Node installs MongoDB, Nako Block Chain Indexer, nginx and Stratis.Guru Block Explorer.
 
 <code>bash <( curl https://raw.githubusercontent.com/RedstonePlatform/Redstone-Node-Install/master/install_redstone_explorer_node.sh )</code>
 

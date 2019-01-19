@@ -213,6 +213,15 @@ function installUnattendedUpgrades() {
     echo -e "${GREEN}* Done${NONE}";
 }
 
+displayServiceStatus() {
+	echo
+	echo
+	on="${GREEN}ACTIVE${NONE}"
+	off="${RED}OFFLINE${NONE}"
+
+	if systemctl is-active --quiet redstoned@redstone; then echo -e "Redstone Service: ${on}"; else echo -e "Redstone Service: ${off}"; fi
+}
+
 clear
 cd
 echo && echo
@@ -252,6 +261,7 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     installUnattendedUpgrades
     startWallet
     set_permissions
+	displayServiceStatus
 
 echo
 echo -e "${GREEN} Installation complete. Check service with: journalctl -f -u ${COINSERVICENAME} ${NONE}"

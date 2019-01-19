@@ -163,7 +163,6 @@ compileWallet() {
     cd ${COINSRCLOC} 
     git submodule update --init --recursive &>> ${SCRIPT_LOGFILE}
     cd ${COINDSRC} 
-    dotnet restore &>> ${SCRIPT_LOGFILE}
     dotnet publish -c ${CONF} -r linux-x64 -v m -o ${COINDLOC} &>> ${SCRIPT_LOGFILE}	   ### compile & publish code 
     rm -rf ${COINSRCLOC} &>> ${SCRIPT_LOGFILE} 	   ### Remove source
     echo -e "${NONE}${GREEN}* Done${NONE}";
@@ -310,11 +309,14 @@ installExplorer() {
 displayServiceStatus() {
 	echo
 	echo
-	if systemctl is-active --quiet redstoned@redstone; then echo -e "  Redstone Service: ${GREEN}ACTIVE${NONE}"; else echo -e "  Redstone Service: ${RED}OFFLINE${NONE}"; fi
-	if systemctl is-active --quiet indexer@redstone; then echo -e "  Indexer Service : ${GREEN}ACTIVE${NONE}"; else echo -e "  Indexer Service : ${RED}OFFLINE${NONE}"; fi
-	if systemctl is-active --quiet explorer@redstone; then echo -e "  Explorer Service: ${GREEN}ACTIVE${NONE}"; else echo -e "  Explorer Service: ${RED}OFFLINE${NONE}"; fi
-	if systemctl is-active --quiet mongod; then echo -e "  Mongo Service   : ${GREEN}ACTIVE${NONE}"; else echo -e "  Mongo Service   : ${RED}OFFLINE${NONE}"; fi
-	if systemctl is-active --quiet nginx; then echo -e "  nginx Service   : ${GREEN}ACTIVE${NONE}"; else echo -e "  nginx Service   : ${RED}OFFLINE${NONE}"; fi
+	on="${GREEN}ACTIVE${NONE}"
+	off="${RED}OFFLINE${NONE}"
+
+	if systemctl is-active --quiet redstoned@redstone; then echo -e "Redstone Service: ${on}"; else echo -e "Redstone Service: ${off}"; fi
+	if systemctl is-active --quiet indexer@redstone; then echo -e "Indexer Service : ${on}"; else echo -e "Indexer Service : ${off}"; fi
+	if systemctl is-active --quiet explorer@redstone; then echo -e "Explorer Service: ${on}"; else echo -e "Explorer Service: ${off}"; fi
+	if systemctl is-active --quiet mongod; then echo -e "Mongo Service   : ${on}"; else echo -e "Mongo Service   : ${off}"; fi
+	if systemctl is-active --quiet nginx; then echo -e "nginx Service   : ${on}"; else echo -e "nginx Service   : ${off}"; fi
 }
 
 clear
@@ -359,12 +361,17 @@ if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
 	installNako
 	installNginx
 	installExplorer
-	displayServiceStatus
 	set_permissions
+	displayServiceStatus
 
 echo
-echo -e "${GREEN} Installation complete. Check service with: journalctl -f -u ${COINSERVICENAME} ${NONE}"
-echo -e "${GREEN} The log file can be found here: ${SCRIPT_LOGFILE}${NONE}"
+echo -e "${GREEN} Installation complete. ${NONE}"
+echo -e "${NONE} The log file can be found here: ${SCRIPT_LOGFILE}${NONE}"
+echo -e "${NONE} Please ensure to check the service journal as follows:"
+echo -e "${NONE} Redstone Node   : ${PURPLE}journalctl -f -u ${COINSERVICENAME}${NONE}"
+echo -e "${NONE} Indexer         : ${PURPLE}journalctl -f -u indexer@redstone${NONE}"
+echo -e "${NONE} Explorer Service: ${PURPLE}journalctl -f -u explorer@redstone${NONE}"
+
 echo -e "${GREEN} thecrypt0hunter(2018)${NONE}"
 else
     if [[ "$response" =~ ^([uU])+$ ]]; then
